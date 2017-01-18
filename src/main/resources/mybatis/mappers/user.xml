@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="user">
+	
+	<!-- AppTest -->
+	<select id="getList" resultType="uservo">
+		<![CDATA[
+			select * from users;
+		]]>
+	</select>
+
+
+	<!-- 가입자 조회 -->
+	<select id="getUserList" parameterType="map" resultType="uservo">
+		<![CDATA[
+			select u.* from
+			(select FORMAT(@ROWNUM:=@ROWNUM+1,0) as ROWNUM, u.* 
+			from (select * from users order by no desc) u, (select @ROWNUM:=0) b) u
+		]]>
+			<choose>
+				<when test="keyword != null and keyword !='' and filterCheck==1">
+					<![CDATA[
+						where id like '%${keyword }%' or location like '%${keyword }%' and
+					]]>
+				</when>
+				<when test="keyword != null and keyword !='' and filterCheck==2">
+					<![CDATA[
+						where id like '%${keyword }%' and 
+					]]>
+				</when>
+				<when test="keyword != null and keyword !='' and filterCheck==3">
+					<![CDATA[
+						where location like '%${keyword }%' and 
+					]]>
+				</when>
+				<otherwise>
+					<![CDATA[
+						where  
+					]]>
+				</otherwise>
+			</choose> 
+		<![CDATA[
+			 ROWNUM<=${page }*${user_page } and ROWNUM>(${page}-1)*${user_page } 
+		]]>
+	</select>
+
+	<!-- 가입자 수 & 검색 수 조회 -->
+	<select id="userByKeywordCount" parameterType="map" resultType="long">
+		<![CDATA[
+			select count(*) 
+			from users
+		]]>
+			<choose>
+			<when test="keyword != null and filterCheck==1">
+				where id like '%${keyword }%' or location like '%${keyword }%'
+			</when>
+			<when test="keyword != null and filterCheck==2">
+				where id like '%${keyword }%'
+			</when>
+			<when test="keyword != null and filterCheck==3">
+				where location like '%${keyword }%'
+			</when>
+			<otherwise>
+			</otherwise>
+			</choose>
+	</select>
+	
+	<!-- 총 가입자 수 조회 -->
+	<select id="userCount" resultType="long">
+		<![CDATA[
+			select count(*) 
+			from users
+		]]>
+	</select>
+	
+	<!-- 사용자 ID 출력 -->
+	<select id="userID" parameterType="long" resultType="string">
+		<![CDATA[
+			select id  
+			from users 
+			where no=#{no}
+		]]>
+	</select>
+	
+	 
+	 <!-- 로그인 정보 가져오기(김영조) -->
+	<select id="getUserInfo" parameterType="map" resultType="uservo">
+	<![CDATA[
+	SELECT * FROM users WHERE id =#{id} AND password = #{password}
+	]]>
+	</select>
+	
+</mapper>

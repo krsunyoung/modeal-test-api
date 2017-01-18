@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="shop">
+
+<!-- resultMap =================================================================================== -->
+
+	<!-- 매장과 댓글(평가), 사용자를 조인한 값을 한번에 가져오기 위해서 resultMap을 만들어서 사용 -->
+	<!-- ShopVo에도 CommentVo와 UserVo를 변수로 추가했음  -->
+	<resultMap type="shopvo" id="shop">  
+        <id column="no" property="no" />
+        <result column="address" property="address" />  
+        <result column="name" property="name" />  
+        <result column="phone" property="phone" />  
+        <result column="picture" property="picture" />  
+        <result column="introduce" property="introduce" />  
+        <!-- 컬럼은 테이블 이름 / 프로퍼티는 vo에 있는 변수값 이름 -->
+        <collection property="comment" resultMap="comment" javaType="ArrayList"/>  
+        <collection property="users" resultMap="users" javaType="ArrayList"/>
+        <!-- property값은 ShopVo에 만든 변수 이름 / resultMap값은 아래 resultMap의 id값 / javaType은 타입 -->
+    </resultMap>
+    
+    <!-- 이곳에 추가한 컬럼만 표시 되고 추가하지 않은 컬럼은 null값이 뜬다 -->
+    <!-- 필요로 하는 컬럼만 추가해서 사용!!! -->
+    <!-- parent key는 필수로 적어줘야 한다 -->
+    <resultMap type="commentvo" id="comment">
+    	<id column="no" property="no" />
+    	<result column="content" property="content" />
+    	<result column="grade" property="grade" />
+    	<result column="shopno" property="shopNo" />
+    	<result column="usersno" property="usersNo" />
+    </resultMap>
+    
+    <!-- 3개의 테이블을 조인 했으므로 조인할 테이블을 적어야 함 -->
+    <resultMap type="uservo" id="users">
+    	<id column="no" property="no" />
+    	<result column="id" property="id" />
+    </resultMap>
+    
+<!-- resultMap =================================================================================== -->
+    
+    <!-- 사업자 목록 띄우기 -->
+    <!-- resultType을 hashmap(map)으로 하면 조인한 값들도 받아 올수 있으나, 컬럼명이 무조건 대문자가 된다 -->
+    <!-- resultMap을 쓰면 컬럼명은 그대로이지만 vo도 건드려야하고 위쪽에 있는 resultMap라는 것도 만들어야 하므로 귀찮다... 고로 그냥 hashmap(map)을 추천한다 -->
+	<select id="list" parameterType="map" resultType="map"> 
+		<![CDATA[
+			select *
+			from(select FORMAT(@rownum:=@rownum + 1, 0) as rn, a.*					
+					from (select s.*, format(ifnull(grade, 0), 1) grade
+							from shop s left outer join
+									(select avg(grade) as grade, shopNo
+										from comments
+									group by shopNo
+									order by shopNo) c 
+							on s.no = c.shopNo
+							order by no desc) a, 
+							(select @rownum:=0) b
+		 ]]>
+		<!-- 검색어 입력시 추가 되는 쿼리문 -->
+		<!-- 대소문자 무시를 위한 upper추가(lower를 해도 됨) -->
+		<if test="keyword != null or keyword !='' ">
+			<choose>
+				<when test="option == 1">
+					<![CDATA[
+						where (upper(name) like concat('%', upper('${keyword }'), '%') or lower(grade) like concat('%', lower('${keyword }'), '%'))
+					]]> 
+				</when>
+				<when test="option == 2">
+					<![CDATA[
+						where (upper(name) like concat('%', upper('${keyword }'), '%'))
+					]]> 
+				</when>
+				<otherwise>
+					<![CDATA[
+						where (lower(grade) like concat('%', lower('${keyword }'), '%'))
+					]]> 
+				</otherwise>
+			</choose>
+		</if>
+		<![CDATA[
+			) a
+			where rn > (${page } - 1) * ${list_size } 
+			and rn <= ${page } * ${list_size }
+		]]>
+	</select>
+
+	<!-- 총 게시물 개수 -->
+	<select id="total" resultType="int">
+		<![CDATA[
+			select count(*) from shop
+		]]>
+	</select>
+	
+	<!-- 검색결과 개수 -->
+	<select id="totalKeyword" parameterType="map" resultType="int">
+		<![CDATA[
+			select count(*) 
+			from shop s, (select s.no, ifnull(avg(grade), 0) grade 
+							from shop s left outer join comments c 
+							on s.no = c.shopNo
+							group by s.no) c
+			where s.no = c.no 
+		]]>
+		<!-- 검색어 입력시 추가 되는 쿼리문 -->
+		<!-- 대소문자 무시를 위한 upper추가(lower를 해도 됨) -->
+		<if test="keyword != null or keyword !='' ">
+			<choose>
+				<when test="option == 1">
+					<![CDATA[
+						and (upper(name) like concat('%', upper('${keyword }'), '%') or lower(grade) like concat('%', lower('${keyword }'), '%'))
+					]]> 
+				</when>
+				<when test="option == 2">
+					<![CDATA[
+						and (upper(name) like concat('%', upper('${keyword }'), '%'))
+					]]> 
+				</when>
+				<when test="option == 3">
+					<![CDATA[
+						and (lower(grade) like concat('%', lower('${keyword }'), '%'))
+					]]> 
+				</when>
+			</choose>
+		</if>
+	</select>
+    
+    
+    <!-- 매장 누르면 매장페이지로 이동해서 보이는 목록들 -->
+    <select id="view" parameterType="long" resultMap="shop">
+    	<![CDATA[
+    		select c.*, s.*, u.id 
+    		from shop s left outer join comments c 
+    							on s.no = c.shopno 
+    						left outer join users u 
+    							on u.no = c.usersno 
+    		where s.no = #{no } 
+    	]]>
+    </select>
+    
+        <!-- 범위에 따른 매장 선택 후 리스트로 output -->
+    <select id="maplist" parameterType="map" resultType="shopvo">
+    <![CDATA[
+    	SELECT *
+  	 	  FROM shop
+ 		 WHERE #{range} > SQRT (POWER ( (#{longitude} - longitude), 2) + POWER ( (#{latitude} - latitude), 2))
+    ]]></select>
+    
+</mapper>

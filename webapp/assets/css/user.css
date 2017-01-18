@@ -1,0 +1,108 @@
+@CHARSET "UTF-8";
+@import "mysite.css";
+
+#user		{ margin:20px auto;	width:540px; }
+#join-form	{
+	width:250px;
+	padding:10px;
+	border:1px solid #666;
+	border-radius: 10px;
+	margin:50px auto;
+}
+
+label.block-label					{ display:block }
+label.block-label, fieldset			{ margin:5px 0 3px 0 }
+label.block-label, fieldset legend	{ margin-bottom:3px }
+
+fieldset				{ border:none }
+input[type="submit"]	{ display:block; width:80px; margin:20px auto }
+
+#login-form	{
+	width:180px;
+	padding:10px;
+	border:1px solid #666;
+	border-radius: 10px;
+	margin:50px auto;
+}
+
+#user p		{ text-align:center; padding:10px}
+
+#user p.jr-success	{ height:200px }
+
+
+
+.navbar-search .search-query {
+    padding: 4px 14px;
+    margin: 10px 5px;
+    font-family: NanumGothic, 나눔고딕, "Malgun Gothic", "맑은 고딕", sans-serif;
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 1;
+}
+
+.dropdown{
+	text-align:center;
+}
+
+
+/* 목록테이블 */
+
+.table{
+	width:100%;max-width:100%;margin-bottom:20px;
+    table-layout:fixed;
+}
+
+.table td,.table th{
+	background-color:#fff!important;
+	padding:8px;
+    word-wrap:break-word;
+}
+.usertable{
+	cursor: pointer;
+}
+table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    table-layout:fixed;
+}
+
+.table>tbody>tr>td{
+    padding: 8px;
+    line-height: 1.42857143;
+    vertical-align: top;
+    border-top: 1px solid #ddd;
+    word-wrap:break-word;
+}
+/* 페이징용 css */
+ul.my_ul {  
+    text-align:center;  
+}  
+ul.my_ul li {  
+    display:inline;  
+    vertical-align:middle;  
+}  
+ul.my_ul li a {  
+    display:-moz-inline-stack;  /*FF2*/  
+    display:inline-block;  
+    vertical-align:top;  
+    padding:4px;  
+    margin-right:3px;  
+    width:15px !important;  
+    color:#000;  
+    font:bold 12px tahoma;  
+    text-align:center;  
+    text-decoration:none;  
+    width /**/:26px;    /*IE 5.5*/  
+}  
+ul.my_ul li a.now {  
+    color:#fff;  
+    background-color:#f40;  
+    border:1px solid #f40;  
+}  
+ul.my_ul li a:hover, ul.my_ul li a:focus {  
+    color:#fff;  
+    border:1px solid #f40;  
+    background-color:#f40;  
+}
+
+/* ============================= */
